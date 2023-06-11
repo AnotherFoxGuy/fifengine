@@ -12,6 +12,7 @@ engine/swigwrappers/python/fifechan_wrap.cc
 engine/swigwrappers/python/fifechan_wrap.h
 
 # Project files
+_build
 build/linux/KDevelop/FIFE.kdevses
 build/linux/code_blocks/fife_engine.cbp
 build/win32/build_environments/code_blocks/fife_engine.cbp
@@ -102,3 +103,4 @@ Icon?
 ehthumbs.db
 Thumbs.db
 .*.swp
+/build/*

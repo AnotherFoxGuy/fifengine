@@ -2,9 +2,12 @@
 #                                 Fifengine                                          
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.2.2)
+cmake_minimum_required(VERSION 3.18)
+
 
 project(fifengine C CXX)
+
+include(FeatureSummary)
 
 #------------------------------------------------------------------------------
 #                                 Version                                          
@@ -749,17 +752,21 @@ find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(Boost 1.33.1 COMPONENTS system filesystem)
 find_package(PNG REQUIRED)
-find_package(OpenALSoft REQUIRED)
+find_package(OpenAL REQUIRED)
 find_package(TinyXML REQUIRED)
 find_package(OGG REQUIRED)
 find_package(VORBIS REQUIRED)
 
 if(opengl)
   find_package(OpenGL REQUIRED)
-  include_directories(${OPENGL_INCLUDE_DIR})  
   find_package(GLEW REQUIRED)
-  include_directories(${GLEW_INCLUDE_DIR})  
 endif(opengl)
+
+
+if (NOT TARGET SDL2_ttf::SDL2_ttf)
+    message(STATUS "Adding SDL2_ttf::SDL2_ttf target")
+    add_library(SDL2_ttf::SDL2_ttf ALIAS sdl_ttf::sdl_ttf)
+endif ()
 
 if(cegui)
   find_package(CEGUI REQUIRED)
@@ -867,19 +874,6 @@ if(build-python)
 
 endif(build-python)
 
-include_directories(${SDL2_INCLUDE_DIR}
-                    ${SDL2_IMAGE_INCLUDE_DIR}
-                    ${SDL2_TTF_INCLUDE_DIR})
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${PNG_INCLUDE_DIRS})
-include_directories(${OPENALSOFT_INCLUDE_DIR})
-include_directories(${OGG_INCLUDE_DIRS})
-include_directories(${VORBIS_INCLUDE_DIRS})
-include_directories(${TinyXML_INCLUDE_DIRS})
-
-add_definitions(${PNG_DEFINITIONS})
-add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
-
 #------------------------------------------------------------------------------
 #                  Build fifengine as a Python extension module                                       
 #------------------------------------------------------------------------------
@@ -900,52 +894,45 @@ if(build-python)
   if(fifechan)
     set(FIFE_SOURCES ${FIFE_SOURCES} ${FIFE_FCHAN_SRC})
   endif(fifechan)
-  # CMake 3.8: swig_add_module is deprecated, use swig_add_library instead.
-  if(${CMAKE_VERSION} VERSION_LESS 3.8)
-    swig_add_module(fife python "${PROJECT_BINARY_DIR}/fife.i" ${FIFE_SOURCES})
-  else(${CMAKE_VERSION} VERSION_LESS 3.8)
-    swig_add_library(fife LANGUAGE python SOURCES "${PROJECT_BINARY_DIR}/fife.i" ${FIFE_SOURCES})
-  endif(${CMAKE_VERSION} VERSION_LESS 3.8)
+
+  swig_add_library(fife LANGUAGE python SOURCES "${PROJECT_BINARY_DIR}/fife.i" ${FIFE_SOURCES})
 
   if(APPLE)
     set(APPLE_DYNAMIC_LOOKUP_FLAG "-undefined dynamic_lookup")
-    swig_link_libraries(fife ${APPLE_DYNAMIC_LOOKUP_FLAG} )
+    target_link_libraries(fife PUBLIC ${APPLE_DYNAMIC_LOOKUP_FLAG})
   else(APPLE)
-    swig_link_libraries(fife ${PYTHON_LIBRARIES})
+    target_link_libraries(fife PUBLIC ${PYTHON_LIBRARIES})
   endif(APPLE)
-  swig_link_libraries(fife ${SDL2_LIBRARY}
-                           ${SDL2_IMAGE_LIBRARIES}
-                           ${SDL2_TTF_LIBRARIES}
-                           ${OPENALSOFT_LIBRARY})
-  swig_link_libraries(fife ${Boost_LIBRARIES})
-  swig_link_libraries(fife ${PNG_LIBRARIES})
-  swig_link_libraries(fife ${VORBISFILE_LIBRARY})
-  swig_link_libraries(fife ${VORBIS_LIBRARY})
-  swig_link_libraries(fife ${OGG_LIBRARIES})
-  swig_link_libraries(fife ${TinyXML_LIBRARIES})
+
+  target_link_libraries(fife PUBLIC    
+      SDL2::SDL2
+      tinyxml::tinyxml
+      SDL2_ttf::SDL2_ttf
+      SDL2_image::SDL2_image
+      OpenAL::OpenAL
+      boost::boost
+      PNG::PNG
+      Vorbis::vorbisfile
+      Vorbis::vorbis
+      Ogg::ogg
+  )
 
   if(opengl)
-    swig_link_libraries(fife ${OPENGL_gl_LIBRARY})
-    swig_link_libraries(fife ${GLEW_LIBRARY})    
+    target_link_libraries(fife PUBLIC opengl::opengl GLEW::GLEW)    
   endif(opengl)
 
   if(fifechan)
     set_source_files_properties("${PROJECT_BINARY_DIR}/fifechan.i" PROPERTIES CPLUSPLUS ON)
 
-    # CMake 3.8: swig_add_module is deprecated, use swig_add_library instead.
-    if(${CMAKE_VERSION} VERSION_LESS 3.8)
-      swig_add_module(fifechan python "${PROJECT_BINARY_DIR}/fifechan.i")
-    else(${CMAKE_VERSION} VERSION_LESS 3.8)
-      swig_add_library(fifechan LANGUAGE python SOURCES "${PROJECT_BINARY_DIR}/fifechan.i")
-    endif(${CMAKE_VERSION} VERSION_LESS 3.8)
+    swig_add_library(fifechan LANGUAGE python SOURCES "${PROJECT_BINARY_DIR}/fifechan.i")
 
     if(APPLE)
-      swig_link_libraries(fifechan ${APPLE_DYNAMIC_LOOKUP_FLAG})
+      target_link_libraries(fifechan PUBLIC ${APPLE_DYNAMIC_LOOKUP_FLAG})
     else(APPLE)
-      swig_link_libraries(fifechan ${PYTHON_LIBRARIES})
+      target_link_libraries(fifechan PUBLIC ${PYTHON_LIBRARIES})
     endif(APPLE)
-    swig_link_libraries(fifechan ${FIFECHAN_LIBRARIES})
-    swig_link_libraries(fife ${FIFECHAN_LIBRARIES})
+    target_link_libraries(fifechan PUBLIC FifeChan::FifeChan)
+    target_link_libraries(fife PUBLIC FifeChan::FifeChan)
   endif(fifechan)
 
   if(cegui)
@@ -969,7 +956,7 @@ if(build-python)
   message(STATUS "    Python install directory is '${PYTHON_SITE_PACKAGES}/fife'.")
 
   # install pythonized fife
-  install(TARGETS     _fife															DESTINATION ${PYTHON_SITE_PACKAGES}/fife)
+  install(TARGETS     fife															DESTINATION ${PYTHON_SITE_PACKAGES}/fife)
   install(FILES       ${PROJECT_BINARY_DIR}/fife.py									DESTINATION ${PYTHON_SITE_PACKAGES}/fife)
   install(FILES       ${CMAKE_SOURCE_DIR}/engine/python/fife/__init__.py			DESTINATION ${PYTHON_SITE_PACKAGES}/fife)
   
@@ -997,7 +984,7 @@ if(build-python)
 	install(DIRECTORY ${CMAKE_SOURCE_DIR}/engine/python/fife/extensions/pychan/		DESTINATION ${PYTHON_SITE_PACKAGES}/fife/extensions/pychan)
 
     # install pythonized fifechan
-    install(TARGETS   _fifechan                           DESTINATION ${PYTHON_SITE_PACKAGES}/fife)
+    install(TARGETS   fifechan                           DESTINATION ${PYTHON_SITE_PACKAGES}/fife)
     install(FILES     ${PROJECT_BINARY_DIR}/fifechan.py   DESTINATION ${PYTHON_SITE_PACKAGES}/fife)
   endif(fifechan)
 endif(build-python)
@@ -1015,26 +1002,27 @@ if(build-library)
   add_library(fife ${FIFE_SOURCES})
   set_target_properties(fife PROPERTIES SOVERSION ${FIFE_VERSION})
 
-  target_link_libraries(fife ${SDL2_LIBRARY}
-                             ${SDL2_IMAGE_LIBRARIES}
-                             ${SDL2_TTF_LIBRARIES}
-                             ${OPENALSOFT_LIBRARY})
-  target_link_libraries(fife ${Boost_LIBRARIES})
-  target_link_libraries(fife ${PNG_LIBRARIES})
-  target_link_libraries(fife ${VORBISFILE_LIBRARY})
-  target_link_libraries(fife ${VORBIS_LIBRARY})
-  target_link_libraries(fife ${OGG_LIBRARIES})
-  target_link_libraries(fife ${TinyXML_LIBRARIES})
+  target_link_libraries(fife PUBLIC
+      SDL2::SDL2
+      SDL2_ttf::SDL2_ttf
+      SDL2_image::SDL2_image
+      OpenAL::OpenAL
+      boost::boost
+      PNG::PNG
+      Vorbis::vorbisfile
+      Vorbis::vorbis
+      Ogg::ogg
+      tinyxml::tinyxml
+      )
   if(opengl)
-    target_link_libraries(fife ${OPENGL_gl_LIBRARY})
-    target_link_libraries(fife ${GLEW_LIBRARY})   
+    target_link_libraries(fife PUBLIC opengl::opengl GLEW::GLEW)
   endif(opengl)  
   if(fifechan)
-    target_link_libraries(fife ${FIFECHAN_LIBRARIES})
+    target_link_libraries(fife PUBLIC FifeChan::FifeChan)
   endif(fifechan)
   if(cegui)
-    target_link_libraries(fife ${CEGUI_LIBRARIES})
-    target_link_libraries(fife ${CEGUI_OpenGLRenderer_LIBRARIES})
+    target_link_libraries(fife PUBLIC ${CEGUI_LIBRARIES})
+    target_link_libraries(fife PUBLIC ${CEGUI_OpenGLRenderer_LIBRARIES})
   endif(cegui)
   
   # include support for GNU / multiarch path names
@@ -1065,3 +1053,5 @@ if(build-library)
     INSTALL_HEADERS_WITH_DIRECTORY(FIFE_LROCKET_HDR)
   endif(librocket)
 endif(build-library)
+
+feature_summary(WHAT ALL)

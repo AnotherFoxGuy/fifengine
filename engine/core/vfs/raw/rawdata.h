@@ -25,6 +25,7 @@
 // Standard C++ library includes
 #include <memory>
 #include <vector>
+#include <string>
 
 // Platform specific includes
 #include "util/base/fife_stdint.h"
