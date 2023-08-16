@@ -22,7 +22,7 @@ class Fifengine(ConanFile):
         self.requires("openal/1.22.2")
         self.requires("sdl_image/2.0.5")
         self.requires("sdl_ttf/2.20.1")
-        self.requires("sdl/2.26.1", force=True)
+        self.requires("sdl/2.26.5", force=True)
         self.requires("tinyxml/2.6.2")
         self.requires("vorbis/1.3.7")
         self.requires("zlib/1.2.13")
