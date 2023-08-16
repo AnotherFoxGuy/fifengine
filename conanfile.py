@@ -13,7 +13,7 @@ class Fifengine(ConanFile):
 
     def requirements(self):
         #self.requires("swig/4.1.0")
-        self.requires("boost/1.81.0")
+        self.requires("boost/1.82.0")
         self.requires("fifechan/0.1.6")
         self.requires("glew/2.2.0")
         self.requires("libpng/1.6.40", force=True)
