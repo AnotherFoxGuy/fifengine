@@ -21,3 +21,18 @@ include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(vorbis DEFAULT_MSG VORBIS_LIBRARY VORBIS_INCLUDE_DIRS)
 find_package_handle_standard_args(vorbisfile DEFAULT_MSG VORBISFILE_LIBRARY VORBIS_INCLUDE_DIRS)
+
+if (vorbis_FOUND)
+    add_library(Vorbis::vorbis INTERFACE IMPORTED)
+    set_target_properties(Vorbis::vorbis PROPERTIES
+            INTERFACE_LINK_LIBRARIES "${VORBIS_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${VORBIS_INCLUDE_DIRS}"
+            )
+endif ()
+if (vorbisfile_FOUND)
+    add_library(Vorbis::vorbisfile INTERFACE IMPORTED)
+    set_target_properties(Vorbis::vorbisfile PROPERTIES
+            INTERFACE_LINK_LIBRARIES "${VORBISFILE_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${VORBIS_INCLUDE_DIRS}"
+            )
+endif ()

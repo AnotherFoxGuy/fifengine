@@ -26,3 +26,11 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(OGG DEFAULT_MSG OGG_LIBRARY OGG_INCLUDE_DIR)
 
 mark_as_advanced(OGG_LIBRARY OGG_INCLUDE_DIR)
+
+if (OGG_FOUND)
+    add_library(Ogg::ogg INTERFACE IMPORTED)
+    set_target_properties(Ogg::ogg PROPERTIES
+            INTERFACE_LINK_LIBRARIES "${OGG_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${VORBIS_INCLUDE_DIRS}"
+            )
+endif ()

@@ -747,7 +747,7 @@ add_custom_target(fife.swig-wrappers SOURCES ${FIFE_SWIGWRAPPERS_PYTHON})
 #                                 Find Packages                                         
 #------------------------------------------------------------------------------
 
-find_package(SDL2 REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(Boost 1.33.1 COMPONENTS system filesystem)
@@ -763,7 +763,7 @@ if(opengl)
 endif(opengl)
 
 
-if (NOT TARGET SDL2_ttf::SDL2_ttf)
+if (NOT TARGET SDL2_ttf::SDL2_ttf AND TARGET sdl_ttf::sdl_ttf)
     message(STATUS "Adding SDL2_ttf::SDL2_ttf target")
     add_library(SDL2_ttf::SDL2_ttf ALIAS sdl_ttf::sdl_ttf)
 endif ()
@@ -805,10 +805,7 @@ endif(build-python)
 
 if(fifechan)
 
-  find_package(FifeChan COMPONENTS sdl REQUIRED)
-  if(opengl)
-    find_package(FifeChan COMPONENTS opengl REQUIRED)
-  endif(opengl)
+  find_package(FifeChan COMPONENTS sdl opengl REQUIRED)
  
   if(build-python)    
     set(SWIG_MODULE_fifechan_EXTRA_DEPS)
@@ -903,7 +900,7 @@ if(build-python)
       SDL2_ttf::SDL2_ttf
       SDL2_image::SDL2_image
       OpenAL::OpenAL
-      boost::boost
+      Boost::boost
       PNG::PNG
       Vorbis::vorbisfile
       Vorbis::vorbis
@@ -911,7 +908,7 @@ if(build-python)
   )
 
   if(opengl)
-    target_link_libraries(fife PUBLIC opengl::opengl GLEW::GLEW)    
+    target_link_libraries(fife PUBLIC OpenGL::OpenGL GLEW::GLEW)    
   endif(opengl)
 
   if(fifechan)
@@ -943,7 +940,7 @@ if(build-python)
       OUTPUT_VARIABLE PYTHON_SITE_PACKAGES
     )
     # Slash-Fix: Cmake would create a warning, when using the variable in FILES or DIRECTORY without changing it.
-    file(TO_CMAKE_PATH ${PYTHON_SITE_PACKAGES} PYTHON_SITE_PACKAGES)
+    #file(TO_CMAKE_PATH ${PYTHON_SITE_PACKAGES} PYTHON_SITE_PACKAGES)
   endif(NOT DEFINED PYTHON_SITE_PACKAGES)
 
   message(STATUS "    Python install directory is '${PYTHON_SITE_PACKAGES}/fife'.")
@@ -992,37 +989,37 @@ if(build-library)
     set(FIFE_SOURCES ${FIFE_SOURCES} ${FIFE_FCHAN_SRC})
   endif(fifechan)
 
-  add_library(fife ${FIFE_SOURCES})
-  set_target_properties(fife PROPERTIES SOVERSION ${FIFE_VERSION})
+  add_library(libfife ${FIFE_SOURCES})
+  set_target_properties(libfife PROPERTIES SOVERSION ${FIFE_VERSION})
 
-  target_link_libraries(fife PUBLIC
+  target_link_libraries(libfife PUBLIC
       SDL2::SDL2
+      tinyxml::tinyxml
       SDL2_ttf::SDL2_ttf
       SDL2_image::SDL2_image
       OpenAL::OpenAL
-      boost::boost
+      Boost::boost
       PNG::PNG
       Vorbis::vorbisfile
       Vorbis::vorbis
       Ogg::ogg
-      tinyxml::tinyxml
       )
   if(opengl)
-    target_link_libraries(fife PUBLIC opengl::opengl GLEW::GLEW)
+    target_link_libraries(libfife PUBLIC OpenGL::OpenGL GLEW::GLEW)
   endif(opengl)  
   if(fifechan)
-    target_link_libraries(fife PUBLIC FifeChan::FifeChan)
+    target_link_libraries(libfife PUBLIC FifeChan::FifeChan)
   endif(fifechan)
   if(cegui)
-    target_link_libraries(fife PUBLIC ${CEGUI_LIBRARIES})
-    target_link_libraries(fife PUBLIC ${CEGUI_OpenGLRenderer_LIBRARIES})
+    target_link_libraries(libfife PUBLIC ${CEGUI_LIBRARIES})
+    target_link_libraries(libfife PUBLIC ${CEGUI_OpenGLRenderer_LIBRARIES})
   endif(cegui)
   
   # include support for GNU / multiarch path names
   # https://www.gnu.org/prep/standards/html_node/Directory-Variables.html
   include(GNUInstallDirs)
   
-  install(TARGETS fife DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(TARGETS libfife DESTINATION ${CMAKE_INSTALL_LIBDIR})
   install(FILES ${PROJECT_SOURCE_DIR}/engine/core/version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fife/core/)
   
   MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)

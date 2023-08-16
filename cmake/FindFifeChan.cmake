@@ -78,3 +78,11 @@ endif(FIFECHAN_FOUND)
 #message(STATUS "FIFECHAN_LIBRARIES    = '${FIFECHAN_LIBRARIES}'")
 
 mark_as_advanced(FIFECHAN_INCLUDE_DIR FIFECHAN_LIBRARY)
+
+if (FIFECHAN_FOUND AND NOT TARGET FifeChan::FifeChan)
+    add_library(FifeChan::FifeChan INTERFACE IMPORTED)
+    set_target_properties(FifeChan::FifeChan PROPERTIES
+            INTERFACE_LINK_LIBRARIES "${FIFECHAN_LIBRARIES}" 
+            INTERFACE_INCLUDE_DIRECTORIES "${FIFECHAN_INCLUDE_DIRS}"
+            )
+endif ()
