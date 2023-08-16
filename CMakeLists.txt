@@ -795,10 +795,7 @@ if(build-python)
   set(CMAKE_SWIG_INCLUSIONS_FCHAN "")
 
   # Find python library and add include path for python headers
-  find_package (PythonInterp)
-  set(PYTHON_LIBRARY "PYTHON_LIBRARY-NOTFOUND")
-  set(PYTHON_INCLUDE_DIR "PYTHON_INCLUDE_DIR-NOTFOUND")
-  find_package (PythonLibs)
+  find_package (Python COMPONENTS Interpreter Development)
   
   foreach(filename ${FIFE_CORE_SWIG})
     list(APPEND SWIG_MODULE_fife_EXTRA_DEPS "${PROJECT_SOURCE_DIR}/engine/core/${filename}")
@@ -880,12 +877,8 @@ endif(build-python)
 
 if(build-python)
   # Find python library and add include path for python headers
-  find_package (PythonInterp)
-  set(PYTHON_LIBRARY "PYTHON_LIBRARY-NOTFOUND")
-  set(PYTHON_INCLUDE_DIR "PYTHON_INCLUDE_DIR-NOTFOUND")
-
-  find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT)
-  include_directories(${PYTHON_INCLUDE_PATH})
+  find_package (Python COMPONENTS Interpreter Development)
+  include_directories(${Python_INCLUDE_DIRS})
 
   set(CMAKE_SWIG_FLAGS -fastdispatch -dirvtable -fastproxy -keyword -w511 -w473 -w404 -w314)
 
@@ -901,7 +894,7 @@ if(build-python)
     set(APPLE_DYNAMIC_LOOKUP_FLAG "-undefined dynamic_lookup")
     target_link_libraries(fife PUBLIC ${APPLE_DYNAMIC_LOOKUP_FLAG})
   else(APPLE)
-    target_link_libraries(fife PUBLIC ${PYTHON_LIBRARIES})
+    target_link_libraries(fife PUBLIC ${Python_LIBRARIES})
   endif(APPLE)
 
   target_link_libraries(fife PUBLIC    
