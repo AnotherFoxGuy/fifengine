@@ -16,7 +16,7 @@ class Fifengine(ConanFile):
         self.requires("boost/1.81.0")
         self.requires("fifechan/0.1.6")
         self.requires("glew/2.2.0")
-        self.requires("libpng/1.6.39", force=True)
+        self.requires("libpng/1.6.40", force=True)
         self.requires("libwebp/1.3.0", override=True)
         self.requires("ogg/1.3.5")
         self.requires("openal/1.22.2")
