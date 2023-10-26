@@ -20,7 +20,7 @@ class Fifengine(ConanFile):
         self.requires("libwebp/1.3.1", override=True)
         self.requires("ogg/1.3.5")
         self.requires("openal/1.22.2")
-        self.requires("sdl_image/2.0.5")
+        self.requires("sdl_image/2.6.3")
         self.requires("sdl_ttf/2.20.2")
         self.requires("sdl/2.26.5", force=True)
         self.requires("tinyxml/2.6.2")
