@@ -27,7 +27,7 @@ class Fifengine(ConanFile):
         self.requires("vorbis/1.3.7")
         self.requires("zlib/1.2.13")
         if self.settings.os == "Linux":
-            self.requires("xz_utils/5.4.2", override=True)
+            self.requires("xz_utils/5.4.5", override=True)
 
     def generate(self):
         for dep in self.dependencies.values():
