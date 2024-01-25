@@ -25,7 +25,7 @@ class Fifengine(ConanFile):
         self.requires("sdl/2.26.5", force=True)
         self.requires("tinyxml/2.6.2")
         self.requires("vorbis/1.3.7")
-        self.requires("zlib/1.2.13")
+        self.requires("zlib/1.3.1")
         if self.settings.os == "Linux":
             self.requires("xz_utils/5.4.2", override=True)
 
